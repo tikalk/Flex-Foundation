@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	PureMVC AS3 / Flex Demo - Loadup as Ordered - Manage loading of data resources
+	Copyright (c) 2008-09 Philip Sexton <philip.sexton@puremvc.org>
+	Your reuse is governed by the Creative Commons Attribution 3.0 License
+-->
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+	pageTitle="PureMVC Demo: LoadupAsOrdered"
+	layout="vertical" horizontalAlign="center" verticalAlign="middle"
+	backgroundGradientColors="[#325EC0,#FFFFFF]"
+	viewSourceURL="srcview/index.html"
+	backgroundColor="#FFFFFF" 
+	themeColor="HaloBlue"
+	creationComplete="facade.startup(this)">
+
+<mx:Script>
+<![CDATA[
+	import mx.collections.ListCollectionView;
+
+	import org.puremvc.as3.utilities.loadup.model.RetryParameters;
+	import org.puremvc.as3.demos.flex.loadupasordered.ApplicationFacade;
+
+	private var facade:ApplicationFacade = ApplicationFacade.getInstance();
+
+	public static const RETRY :String = "retry";
+	public static const LOAD :String = "load";
+	public static const TRY_TO_COMPLETE :String = "tryToComplete";
+
+	[Bindable] public var customerStatus :String = "";
+	[Bindable] public var productStatus :String = "";
+	[Bindable] public var salesOrderStatus :String = "";
+	[Bindable] public var debtorAccountStatus :String = "";
+	[Bindable] public var invoiceStatus :String = "";
+	[Bindable] public var overallStatus :String = "...";
+
+	[Bindable] public var notifications :ListCollectionView;
+	[Bindable] public var retryIsVisible :Boolean = false;
+	[Bindable] public var retryIsEnabled :Boolean = false;
+
+	public var retryParameters :RetryParameters = new RetryParameters();
+	[Bindable] public var paramsEntryIsEnabled :Boolean = true;
+	[Bindable] public var mode :int =1;
+
+	[Bindable] private var initialMaxRetries :int = retryParameters.maxRetries;
+	[Bindable] private var initialRetryInterval :Number = retryParameters.retryInterval;
+	[Bindable] private var initialTimeout :Number = retryParameters.timeout;
+
+	private function goLoad() :void {
+		updateRetryParameters();
+		if (mode == 1)
+			sendEvent( LOAD );
+		else
+			sendEvent( TRY_TO_COMPLETE );		
+	}
+	private function sendEvent( eventName :String ) :void {
+		dispatchEvent( new Event( eventName ));
+	}
+	private function updateRetryParameters() :void {
+		retryParameters = new RetryParameters( maxRetries.value, retryInterval.value, timeout.value );
+	}
+
+]]>
+</mx:Script>
+
+<mx:ApplicationControlBar verticalAlign="middle" backgroundColor="#FFFFFF" dock="true">
+	<mx:VBox width="100%">
+		<mx:HBox>
+			<mx:Text text="Loadup As Ordered" fontFamily="Verdana" fontSize="22" fontStyle="normal" color="#0559CC"/>
+			<mx:Label fontWeight="bold" text="PureMVC AS3 / Flex / Loadup Demo"/>
+		</mx:HBox>
+		<mx:Panel title="Default Retry Parameters, per resource" width="100%" layout="horizontal"
+			fontSize="14" horizontalGap="50">
+			<mx:FormItem label="Max Retries:" enabled="{paramsEntryIsEnabled}">
+				<mx:NumericStepper id="maxRetries" value="{initialMaxRetries}"/>
+			</mx:FormItem>
+			<mx:FormItem label="Retry Interval (secs):" enabled="{paramsEntryIsEnabled}">
+				<mx:NumericStepper id="retryInterval" stepSize=".1" value="{initialRetryInterval}" />
+			</mx:FormItem>
+			<mx:FormItem label="Timeout (secs):" enabled="{paramsEntryIsEnabled}">
+				<mx:NumericStepper id="timeout" maximum="3000" value="{initialTimeout}" />
+			</mx:FormItem>
+			<mx:Button label="{ mode == 1 ? 'Load Resources' : 'Try To Complete'}"
+				enabled="{paramsEntryIsEnabled}"
+				click="goLoad()" />
+		</mx:Panel>
+	</mx:VBox>
+</mx:ApplicationControlBar>
+
+<mx:HBox>
+	<mx:Panel title="Loading Progress" height="100%" width="400" layout="vertical" fontSize="14">
+		<mx:ProgressBar id="pb" minimum="0" maximum="100" mode="manual" width="350"/>
+		<mx:Label text="Customer Status: {customerStatus}"/>
+		<mx:Label text="Product Status: {productStatus}"/>
+		<mx:Label text="" />
+		<mx:Label text="Sales Order Status: {salesOrderStatus}"/>
+		<mx:Label text="...requires Customer, Product" />
+		<mx:Label text="" />
+		<mx:Label text="Debtor Account Status: {debtorAccountStatus}"/>
+		<mx:Label text="...requires Customer" />
+		<mx:Label text="" />
+		<mx:Label text="Invoice Status: {invoiceStatus}"/>
+		<mx:Label text="...requires Debtor Account, Sales Order" />
+		<mx:Label text="" />
+		<mx:Label text="Overall Status: {overallStatus}" fontWeight="bold" />
+	</mx:Panel>
+
+	<mx:Panel title="Notifications Received" height="100%" width="400"
+		fontSize="14">
+		<mx:List dataProvider="{notifications}" height="100%" width="100%" />
+	</mx:Panel>
+</mx:HBox>
+
+</mx:Application>
