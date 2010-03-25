@@ -1,0 +1,1 @@
+A Flex framework which is a generic foundation for applicative infrastructures.
